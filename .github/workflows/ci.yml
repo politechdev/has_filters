@@ -1,0 +1,44 @@
+name: CI
+
+on: pull_request
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:10
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v1
+
+      - uses: actions/setup-ruby@v1
+        with:
+          ruby-version: '2.5'
+
+      - name: Cache gems
+        uses: actions/cache@v1
+        with:
+          path: ~/.gems
+          key: ${{ runner.OS }}-gems-${{ hashFiles('Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.OS }}-gems-
+
+      - name: Install gems
+        env:
+          BUNDLE_PATH: ~/.gems
+        run: |
+          sudo apt-get -yqq install libpq-dev
+          gem update --system --quiet
+          bundle install --jobs 4 --retry 3
+
+      - name: Run rspec tests
+        env:
+          BUNDLE_PATH: ~/.gems
+        run: bundle exec rspec
