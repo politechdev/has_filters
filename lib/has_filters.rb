@@ -109,7 +109,13 @@ module HasFilters
 
       rule = rule.to_h.symbolize_keys
 
-      return [rule[:column], Array.wrap(rule[:param])] if @allowed_scopes.include?(rule[:column].try(:to_sym))
+      if @allowed_scopes.include?(rule[:column].try(:to_sym))
+        scope = rule[:column]
+        params = rule[:param]
+        params = params.symbolize_keys if params.is_a?(Hash)
+
+        return [scope, Array.wrap(params)]
+      end
 
       raise InvalidFilterError, "Invalid rule object: #{rule.inspect}" unless %i(column operator param).all? { |k| rule.key?(k) }
 

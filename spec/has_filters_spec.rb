@@ -294,6 +294,20 @@ RSpec.describe HasFilters do
       it { is_dynamically_expected.not_to raise_error }
     end
 
+    context "when column refers to existing scope with keyword arguments" do
+      subject { Filterable.filter(rules: [{ column: "with_custom_scope", param: { "arg1" => 1, "arg2" => 2 } }]) }
+
+      before do
+        Filterable.class_eval do
+          has_filters scopes: %i(with_custom_scope)
+
+          def self.with_custom_scope(arg1:, arg2:); all end
+        end
+      end
+
+      it { is_dynamically_expected.not_to raise_error }
+    end
+
     context "when column refers to association scope" do
       subject { Filterable.filter(rules: [{ column: "filterable_friend_with_custom_scope", param: "value" }]) }
 
