@@ -19,7 +19,7 @@ require_relative "has_filters/operators"
 #  SomeModel.by_name("Hello")
 #  SomeModel.by_full_name("Hello World")
 #  SomeModel.by_joined_model_name(containing: "ello")
-#  SomeModel.filter([column: "custom_scope", param: ["argument"]])
+#  SomeModel.with_filters([column: "custom_scope", param: ["argument"]])
 module HasFilters
   class UnfilterableJoinError < StandardError; end
   class InvalidFilterError < StandardError; end
@@ -35,7 +35,7 @@ module HasFilters
   end
 
   module ClassMethods
-    def filter(rules: [], conjunction: :exclusive)
+    def with_filters(rules: [], conjunction: :exclusive)
       raise InvalidFilterError, "Invalid rules object" unless rules.is_a?(Array) && rules.all? { |r| r.respond_to?(:to_h) }
 
       return all unless rules.any?
@@ -77,7 +77,7 @@ module HasFilters
       nested = base_rule.key?(:rules)
 
       base_filter = if nested
-                      filter(base_rule)
+                      with_filters(base_rule)
                     else
                       (filter_method, filter_args) = extract_filter_args(base_rule)
 
@@ -87,7 +87,7 @@ module HasFilters
       rules.inject(base_filter) do |existing_scope, rule|
         nested = rule.key?(:rules)
 
-        (filter_method, filter_args) = nested ? [:filter, [rule]] : extract_filter_args(rule)
+        (filter_method, filter_args) = nested ? [:with_filters, [rule]] : extract_filter_args(rule)
 
         if conjunction == :exclusive
           try_apply_filter(existing_scope, filter_method, filter_args)
