@@ -51,7 +51,7 @@ RSpec.describe HasFilters do
 
   describe ".filter" do
     context "with nested inclusive filters when base scope is limited" do
-      subject { Filterable.limit(1).filter(rules: rules) }
+      subject { Filterable.limit(1).with_filters(rules: rules) }
 
       let(:rules) do
         [
@@ -86,7 +86,7 @@ RSpec.describe HasFilters do
     end
 
     context "when inclusive filter is chained" do
-      subject { Filterable.limit(1).filter(rules: [{ column: "filterable_string", operator: "is", param: "test" }, { column: "filterable_string", operator: "is", param: "testing" }], conjunction: :inclusive) }
+      subject { Filterable.limit(1).with_filters(rules: [{ column: "filterable_string", operator: "is", param: "test" }, { column: "filterable_string", operator: "is", param: "testing" }], conjunction: :inclusive) }
 
       before do
         Filterable.class_eval do
@@ -101,7 +101,7 @@ RSpec.describe HasFilters do
     end
 
     context "when inclusive filter is chained with another condition" do
-      subject { Filterable.where(filterable_string: "test").filter(rules: [{ column: "filterable_string", operator: "is", param: "test" }, { column: "filterable_string", operator: "is", param: "testing" }], conjunction: :inclusive) }
+      subject { Filterable.where(filterable_string: "test").with_filters(rules: [{ column: "filterable_string", operator: "is", param: "test" }, { column: "filterable_string", operator: "is", param: "testing" }], conjunction: :inclusive) }
 
       before do
         Filterable.class_eval do
@@ -116,7 +116,7 @@ RSpec.describe HasFilters do
     end
 
     context "with default operator" do
-      subject { Filterable.filter(rules: rules) }
+      subject { Filterable.with_filters(rules: rules) }
 
       let(:rules) do
         [
@@ -138,7 +138,7 @@ RSpec.describe HasFilters do
     end
 
     context "when a non-array arg is passed" do
-      subject { Filterable.filter(rules: "wrong") }
+      subject { Filterable.with_filters(rules: "wrong") }
 
       before do
         Filterable.class_eval do
@@ -150,7 +150,7 @@ RSpec.describe HasFilters do
     end
 
     context "when a non-hash filter is passed" do
-      subject { Filterable.filter(rules: ["wrong"]) }
+      subject { Filterable.with_filters(rules: ["wrong"]) }
 
       before do
         Filterable.class_eval do
@@ -162,7 +162,7 @@ RSpec.describe HasFilters do
     end
 
     context "with inclusive operator" do
-      subject { Filterable.filter(rules: rules, conjunction: :inclusive) }
+      subject { Filterable.with_filters(rules: rules, conjunction: :inclusive) }
 
       let!(:exact_match) { Filterable.create!(filterable_string: "test") }
 
@@ -185,7 +185,7 @@ RSpec.describe HasFilters do
     end
 
     context "with a nested rule set" do
-      subject { Filterable.filter(rules: rules) }
+      subject { Filterable.with_filters(rules: rules) }
 
       let!(:exact_match) { Filterable.create!(filterable_string: "test") }
 
@@ -212,7 +212,7 @@ RSpec.describe HasFilters do
     end
 
     context "with a nested rule set with string keys" do
-      subject { Filterable.filter(rules: rules) }
+      subject { Filterable.with_filters(rules: rules) }
 
       let!(:exact_match) { Filterable.create!(filterable_string: "test") }
 
@@ -239,7 +239,7 @@ RSpec.describe HasFilters do
     end
 
     context "with invalid rule" do
-      subject { Filterable.filter(rules: [{ not: "real" }]) }
+      subject { Filterable.with_filters(rules: [{ not: "real" }]) }
 
       before do
         Filterable.class_eval do
@@ -251,7 +251,7 @@ RSpec.describe HasFilters do
     end
 
     context "with blank rule" do
-      subject { Filterable.filter(rules: [{}]) }
+      subject { Filterable.with_filters(rules: [{}]) }
 
       let!(:match) { Filterable.create! }
 
@@ -265,7 +265,7 @@ RSpec.describe HasFilters do
     end
 
     context "when column refers to existing scope" do
-      subject { Filterable.filter(rules: [{ column: "with_custom_scope", param: "value" }]) }
+      subject { Filterable.with_filters(rules: [{ column: "with_custom_scope", param: "value" }]) }
 
       before do
         Filterable.class_eval do
@@ -281,7 +281,7 @@ RSpec.describe HasFilters do
     end
 
     context "when column refers to existing scope with multiple arguments" do
-      subject { Filterable.filter(rules: [{ column: "with_custom_scope", param: %w(arg1 arg2) }]) }
+      subject { Filterable.with_filters(rules: [{ column: "with_custom_scope", param: %w(arg1 arg2) }]) }
 
       before do
         Filterable.class_eval do
@@ -295,7 +295,7 @@ RSpec.describe HasFilters do
     end
 
     context "when column refers to existing scope with keyword arguments" do
-      subject { Filterable.filter(rules: [{ column: "with_custom_scope", param: { "arg1" => 1, "arg2" => 2 } }]) }
+      subject { Filterable.with_filters(rules: [{ column: "with_custom_scope", param: { "arg1" => 1, "arg2" => 2 } }]) }
 
       before do
         Filterable.class_eval do
@@ -309,7 +309,7 @@ RSpec.describe HasFilters do
     end
 
     context "when column refers to association scope" do
-      subject { Filterable.filter(rules: [{ column: "filterable_friend_with_custom_scope", param: "value" }]) }
+      subject { Filterable.with_filters(rules: [{ column: "filterable_friend_with_custom_scope", param: "value" }]) }
 
       before do
         FilterableFriend.class_eval do
@@ -330,7 +330,7 @@ RSpec.describe HasFilters do
     end
 
     context "when column refers to association scope that takes multiple arguments" do
-      subject { Filterable.filter(rules: [{ column: "filterable_friend_with_custom_scope", param: %w(arg1 arg2) }]) }
+      subject { Filterable.with_filters(rules: [{ column: "filterable_friend_with_custom_scope", param: %w(arg1 arg2) }]) }
 
       before do
         FilterableFriend.class_eval do
@@ -348,7 +348,7 @@ RSpec.describe HasFilters do
     end
 
     context "when column refers to non-existing scope" do
-      subject { Filterable.filter(rules: rules) }
+      subject { Filterable.with_filters(rules: rules) }
 
       let(:rules) { [{ column: "name", operator: "is", param: "test" }] }
 
